@@ -40,16 +40,8 @@ def create_creature_locations():
     return creature_locations
 
 
-def paint_cell_pink(matrix, pair):
-    matrix[pair[0], pair[1]] = PINK
-
-
-def paint_cell_blue(matrix, pair):
-    matrix[pair[0], pair[1]] = BLUE
-
-
-def paint_cell_black(matrix, pair):
-    matrix[pair[0], pair[1]] = BLACK
+def paint_cell(matrix, location, state):
+    matrix[location[0], location[1]] = creature.StateToColor[state]
 
 
 def init():
@@ -57,13 +49,13 @@ def init():
     matrix = init_matrix()
     creature_locations = create_creature_locations()
     for pair in creature_locations:
-        paint_cell_blue(matrix, pair)
+        paint_cell(matrix, pair, creature.State.NO_CORONA)
 
     # taking a random subgroup of N, it is our D
     corona_list = random.sample(creature_locations, k=math.floor(D * N))
     # painting in pink the corona sick
     for pair in corona_list:
-        paint_cell_pink(matrix, pair)
+        paint_cell(matrix, pair, creature.State.CORONA)
 
     # calculate the rest that doesn't have corona ( noCoronaList = listOfPairs - coronaList )
     no_corona_list = list(set(creature_locations).difference(set(corona_list)))
@@ -103,22 +95,17 @@ def run(matrix, creature_matrix):
                 c = creature_matrix[i][j]
                 if not c:
                     continue
+
                 prev, curr = c.move()
-
-                if c.state == creature.State.CORONA:
-                    if not compare(prev, curr) and is_cell_empty(matrix, curr):
-                        paint_cell_black(matrix, prev)  # paint the current cell in black
-                        paint_cell_pink(matrix, curr)
-
-                elif c.state == creature.State.NO_CORONA:
-                    if not compare(prev, curr) and is_cell_empty(matrix, curr):
-                        paint_cell_black(matrix, prev)
-                        paint_cell_blue(matrix, curr)
 
                 creature_list = [item for sublist in creature_matrix for item in sublist if item]
                 sick_list = [c for c in creature_list if c and c.sick]
                 infection_rate = 1 - len(sick_list)/len(creature_list)
                 c.infect(creature_matrix, infection_rate, len(sick_list))
+
+                if not compare(prev, curr) and is_cell_empty(matrix, curr):
+                    paint_cell(matrix, prev, creature.State.NONE)
+                    paint_cell(matrix, curr, c.state)
 
         show(matrix)
 

@@ -6,8 +6,10 @@ from itertools import product
 
 
 class State(enum.IntEnum):
+    NONE = 0
     CORONA = 1
     NO_CORONA = 2
+    NOT_INFECTIOUS = 3
 
 
 class Speed(enum.IntEnum):
@@ -15,11 +17,25 @@ class Speed(enum.IntEnum):
     FAST = 10
 
 
+BLUE = (255, 0, 0)
+PINK = (238, 130, 238)
+BLACK = (0, 0, 0)
+GRAY = (220, 220, 220)
+
+StateToColor = {
+    State.NONE: BLACK,
+    State.CORONA: PINK,
+    State.NO_CORONA: BLUE,
+    State.NOT_INFECTIOUS: GRAY
+}
+
+
 class Creature:
     def __init__(self, location, state=State.NO_CORONA, speed=0):
         self.location = location
         self.state = state
         self.speed = speed
+        self.generation_number_infection = 50
 
     def move(self):
         x = self.location[0]
@@ -61,9 +77,15 @@ class Creature:
             if neighbour and not neighbour.sick:
                 infection_percentage = infection_rate * 100
                 probability = random.randint(0, 100)
-                if probability < infection_percentage:
+                if probability < infection_percentage and self.generation_number_infection:
                     neighbour.state = State.CORONA
-                    print("[" + datetime.datetime.now().strftime("%H:%M:%S") + "]: " + str(sick_count + 1))
+                    print("[" + datetime.datetime.now().strftime("%H:%M:%S") + "]:\n\tsick count: " + str(sick_count + 1) +
+                          "\n\tgeneration of infection: " + str(self.generation_number_infection))
+
+        if self.generation_number_infection > 0:
+            self.generation_number_infection -= 1
+            if not self.generation_number_infection:
+                self.state = State.NOT_INFECTIOUS
 
     @property
     def sick(self):

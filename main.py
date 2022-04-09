@@ -8,9 +8,6 @@ import creature
 SIZE = 200
 N = 100
 D = 50 / 100
-# R = 20 / 100
-# D = random.randint(0, 100)/100
-# R = 0.1
 P = 0.8
 T = 0.5
 X = 5
@@ -73,51 +70,55 @@ def init():
 
     R = 10
 
-    creature_list = []
+    creature_matrix = [[0 for x in range(200)] for y in range(200)]
     for creature_location in corona_list:
-        creature_list.append(creature.Creature(
+        creature_matrix[creature_location[0]][creature_location[1]] = creature.Creature(
             location=creature_location,
             state=creature.State.CORONA,
             speed=creature.Speed.FAST if random.randint(0, 100) <= R else creature.Speed.SLOW
-        ))
+        )
 
     for creature_location in no_corona_list:
-        creature_list.append(creature.Creature(
+        creature_matrix[creature_location[0]][creature_location[1]] = creature.Creature(
             location=creature_location,
             state=creature.State.NO_CORONA,
             speed=creature.Speed.FAST if random.randint(0, 100) <= R else creature.Speed.SLOW
-        ))
+        )
 
-    return matrix, creature_list
+    return matrix, creature_matrix
 
 
 def compare(pair, pair2):
-    if (pair[0] == pair2[0]) and (pair[1] == pair2[1]):
-        return True
-    else:
-        return False
+    return (pair[0] == pair2[0]) and (pair[1] == pair2[1])
 
 
 def is_cell_empty(matrix, next_cell):
-    if matrix[next_cell[0], next_cell[1]] is not BLACK:
-        return True
-    return False
+    return matrix[next_cell[0], next_cell[1]] is not BLACK
 
 
-def run(matrix, creature_list):
+def run(matrix, creature_matrix):
     while True:
-        for c in creature_list:
-            prev, curr = c.move()
+        for i in range(200):
+            for j in range(200):
+                c = creature_matrix[i][j]
+                if not c:
+                    continue
+                prev, curr = c.move()
 
-            if c.state == creature.State.CORONA:
-                if not compare(prev, curr) and is_cell_empty(matrix, curr):
-                    paint_cell_black(matrix, prev)  # paint the current cell in black
-                    paint_cell_blue(matrix, curr)
+                if c.state == creature.State.CORONA:
+                    if not compare(prev, curr) and is_cell_empty(matrix, curr):
+                        paint_cell_black(matrix, prev)  # paint the current cell in black
+                        paint_cell_pink(matrix, curr)
 
-            elif c.state == creature.State.NO_CORONA:
-                if not compare(prev, curr) and is_cell_empty(matrix, curr):
-                    paint_cell_black(matrix, prev)
-                    paint_cell_pink(matrix, curr)
+                elif c.state == creature.State.NO_CORONA:
+                    if not compare(prev, curr) and is_cell_empty(matrix, curr):
+                        paint_cell_black(matrix, prev)
+                        paint_cell_blue(matrix, curr)
+
+                creature_list = [item for sublist in creature_matrix for item in sublist if item]
+                sick_list = [c for c in creature_list if c and c.sick]
+                infection_rate = 1 - len(sick_list)/len(creature_list)
+                c.infect(creature_matrix, infection_rate, len(sick_list))
 
         show(matrix)
 

@@ -1,5 +1,8 @@
+import datetime
 import enum
 import random
+
+from itertools import product
 
 
 class State(enum.IntEnum):
@@ -37,6 +40,34 @@ class Creature:
         prev_location = self.location
         self.location = Creature.wrap_around(neighbourhoods_list[random_num])
         return prev_location, self.location
+
+    @staticmethod
+    def _neighbours(cell):
+        for c in product(*(range(n - 1, n + 2) for n in cell)):
+            if c != cell and all(0 <= n < 200 for n in c):
+                yield c
+
+    def infect(self, matrix, infection_rate, sick_count):
+        """
+        x x x
+        x o x
+        x x x
+        """
+        if not self.sick:
+            return
+
+        for neighbour_locations in Creature._neighbours(self.location):
+            neighbour = matrix[neighbour_locations[0]][neighbour_locations[1]]
+            if neighbour and not neighbour.sick:
+                infection_percentage = infection_rate * 100
+                probability = random.randint(0, 100)
+                if probability < infection_percentage:
+                    neighbour.state = State.CORONA
+                    print("[" + datetime.datetime.now().strftime("%H:%M:%S") + "]: " + str(sick_count + 1))
+
+    @property
+    def sick(self):
+        return self.state == State.CORONA
 
     @staticmethod
     def wrap_around(next_cell):

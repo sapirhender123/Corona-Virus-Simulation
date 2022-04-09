@@ -4,6 +4,8 @@ import random
 
 from itertools import product
 
+import consts
+
 
 class State(enum.IntEnum):
     NONE = 0
@@ -17,16 +19,11 @@ class Speed(enum.IntEnum):
     FAST = 10
 
 
-BLUE = (255, 0, 0)
-PINK = (238, 130, 238)
-BLACK = (0, 0, 0)
-GRAY = (220, 220, 220)
-
 StateToColor = {
-    State.NONE: BLACK,
-    State.CORONA: PINK,
-    State.NO_CORONA: BLUE,
-    State.NOT_INFECTIOUS: GRAY
+    State.NONE: consts.BLACK,
+    State.CORONA: consts.PINK,
+    State.NO_CORONA: consts.BLUE,
+    State.NOT_INFECTIOUS: consts.GRAY
 }
 
 
@@ -60,7 +57,7 @@ class Creature:
     @staticmethod
     def _neighbours(cell):
         for c in product(*(range(n - 1, n + 2) for n in cell)):
-            if c != cell and all(0 <= n < 200 for n in c):
+            if c != cell and all(0 <= n < consts.SIZE for n in c):
                 yield c
 
     def infect(self, matrix, infection_rate, sick_count):
@@ -79,7 +76,8 @@ class Creature:
                 probability = random.randint(0, 100)
                 if probability < infection_percentage and self.generation_number_infection:
                     neighbour.state = State.CORONA
-                    print("[" + datetime.datetime.now().strftime("%H:%M:%S") + "]:\n\tsick count: " + str(sick_count + 1) +
+                    print("[" + datetime.datetime.now().strftime("%H:%M:%S") +
+                          "]:\n\tsick count: " + str(sick_count + 1) +
                           "\n\tgeneration of infection: " + str(self.generation_number_infection))
 
         if self.generation_number_infection > 0:
@@ -96,13 +94,13 @@ class Creature:
         next_cell = list(next_cell)
 
         if next_cell[0] < 0:
-            next_cell[0] += 200
-        elif next_cell[0] > 199:
-            next_cell[0] -= 200
+            next_cell[0] += consts.SIZE
+        elif next_cell[0] > consts.SIZE - 1:
+            next_cell[0] -= consts.SIZE
 
         if next_cell[1] < 0:
-            next_cell[1] += 200
-        elif next_cell[1] > 199:
-            next_cell[1] -= 200
+            next_cell[1] += consts.SIZE
+        elif next_cell[1] > consts.SIZE - 1:
+            next_cell[1] -= consts.SIZE
 
         return next_cell

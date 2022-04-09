@@ -4,16 +4,7 @@ import math
 import cv2
 
 import creature
-
-SIZE = 200
-N = 100
-D = 50 / 100
-P = 0.8
-T = 0.5
-X = 5
-BLUE = (255, 0, 0)
-PINK = (238, 130, 238)
-BLACK = (0, 0, 0)
+import consts
 
 
 def show(matrix):
@@ -25,17 +16,17 @@ def show(matrix):
 
 def init_matrix():
     # create the matrix
-    matrix = np.zeros(shape=(SIZE, SIZE, 3))
+    matrix = np.zeros(shape=(consts.SIZE, consts.SIZE, 3))
     return matrix
 
 
 def create_creature_locations():
     creature_locations = []
     # create N creatures
-    for i in range(N):
+    for i in range(consts.N):
         # TODO fix painting the same cell
-        x_of_creature = random.randint(0, 199)
-        y_of_creature = random.randint(0, 199)
+        x_of_creature = random.randint(0, consts.SIZE - 1)
+        y_of_creature = random.randint(0, consts.SIZE - 1)
         creature_locations.append((x_of_creature, y_of_creature))
     return creature_locations
 
@@ -45,14 +36,13 @@ def paint_cell(matrix, location, state):
 
 
 def init():
-    # with_corona = int(N * D / 100)
     matrix = init_matrix()
     creature_locations = create_creature_locations()
     for pair in creature_locations:
         paint_cell(matrix, pair, creature.State.NO_CORONA)
 
     # taking a random subgroup of N, it is our D
-    corona_list = random.sample(creature_locations, k=math.floor(D * N))
+    corona_list = random.sample(creature_locations, k=math.floor(consts.D * consts.N))
     # painting in pink the corona sick
     for pair in corona_list:
         paint_cell(matrix, pair, creature.State.CORONA)
@@ -85,7 +75,7 @@ def compare(pair, pair2):
 
 
 def is_cell_empty(matrix, next_cell):
-    return matrix[next_cell[0], next_cell[1]] is not BLACK
+    return all(np.equal(matrix[next_cell[0], next_cell[1]], np.asarray(consts.BLACK)))
 
 
 def run(matrix, creature_matrix):

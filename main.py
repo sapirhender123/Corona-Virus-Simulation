@@ -1,10 +1,7 @@
 import random
-
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import math
-from matplotlib.pyplot import figure
+import cv2
 
 SIZE = 200
 N = 100
@@ -14,71 +11,77 @@ R = 0.1
 P = 0.8
 T = 0.5
 X = 5
-BLUE = (0, 0, 255)
+BLUE = (255, 0, 0)
 PINK = (238, 130, 238)
+BLACK = (0, 0, 0)
 
 
 def show(matrix):
-    plt.imshow((matrix).astype(np.uint8))
-    plt.show()
+    cv2.namedWindow("output", cv2.WINDOW_NORMAL)  # Create window with freedom of dimensions
+    resized = cv2.resize(matrix.astype(np.uint8), (3000, 3000))  # Resize image
+    cv2.imshow("output", resized)  # Show image
+    cv2.waitKey(300)
 
 
-def initMatrix():
+def init_matrix():
     # create the matrix
     matrix = np.zeros(shape=(SIZE, SIZE, 3))
-    fig = matplotlib.pyplot.gcf()
-    fig.set_size_inches(12.5, 7.5)
     return matrix
 
 
-def createCreatures(matrix):
-    listOfPairs = []
+def create_creatures():
+    list_of_pairs = []
     # create N creatures
     for i in range(N):
         # TODO fix painting the same cell
-        xOfCreature = random.randint(0, 199)
-        yOfCreature = random.randint(0, 199)
-        listOfPairs.append((xOfCreature, yOfCreature))
-    return listOfPairs
+        x_of_creature = random.randint(0, 199)
+        y_of_creature = random.randint(0, 199)
+        list_of_pairs.append((x_of_creature, y_of_creature))
+    return list_of_pairs
 
 
-def paintCellPink(matrix, pair):
+def paint_cell_pink(matrix, pair):
     matrix[pair[0], pair[1]] = PINK
 
 
-def paintCellBlue(matrix, pair):
+def paint_cell_blue(matrix, pair):
     matrix[pair[0], pair[1]] = BLUE
 
 
 def init():
-    with_corona = int(N * D / 100)
-    matrix = initMatrix()
-    listOfPairs = createCreatures(matrix)
-    # taking a random sub-group of N, it is our D
-    coronaList = random.sample(listOfPairs, k=math.floor(D * N))
-    # painting in pink the corona sick
-    for pair in coronaList:
-        paintCellPink(matrix, pair)
-    # calculate the rest that doesn't have corona ( noCoronaList = listOfPairs - coronaList )
-    noCoronaList = list(set(listOfPairs).difference(set(coronaList)))
+    while True:
+        # with_corona = int(N * D / 100)
+        matrix = init_matrix()
+        list_of_pairs = create_creatures()
+        for pair in list_of_pairs:
+            paint_cell_blue(matrix, pair)
 
-    # creating the movement for those who don't have corona (the blue points)
-    for pair in noCoronaList:
-        next_cell = move_cell(pair[0], pair[1])
-        # if the next move isn't to stay in place
-        if not compare(next_cell, pair):
-            # moving the next generation - those who don't have corona
-            matrix[pair[0], pair[1]] = (30, 30, 30)  # paint the current cell in black
-            next_cell = BLUE
+        # taking a random subgroup of N, it is our D
+        corona_list = random.sample(list_of_pairs, k=math.floor(D * N))
+        # painting in pink the corona sick
+        for pair in corona_list:
+            paint_cell_pink(matrix, pair)
 
-    for pair in noCoronaList:
-        next_cell = move_cell(pair[0], pair[1])
-        if not compare(next_cell, pair):
-            # moving the next generation - those who have corona
-            matrix[pair[0], pair[1]] = (30, 30, 30)
-            next_cell = PINK
+        # calculate the rest that doesn't have corona ( noCoronaList = listOfPairs - coronaList )
+        no_corona_list = list(set(list_of_pairs).difference(set(corona_list)))
 
-    show(matrix)
+        # creating the movement for those who don't have corona (the blue points)
+        for pair in no_corona_list:
+            next_cell = move_cell(pair[0], pair[1])
+            # if the next move isn't to stay in place
+            if not compare(next_cell, pair):
+                # moving the next generation - those who don't have corona
+                matrix[pair[0], pair[1]] = BLACK  # paint the current cell in black
+                paint_cell_blue(matrix, next_cell)
+
+        for pair in corona_list:
+            next_cell = move_cell(pair[0], pair[1])
+            if not compare(next_cell, pair):
+                # moving the next generation - those who have corona
+                matrix[pair[0], pair[1]] = (0, 0, 0)
+                # next_cell = PINK
+
+        show(matrix)
 
 
 def compare(pair, pair2):
@@ -89,10 +92,10 @@ def compare(pair, pair2):
 
 
 def move_cell(x, y):
-    neigbrhoodsList = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x, y), (x + 1, y), (x - 1, y + 1),
-                       (x, y + 1), (x + 1, y + 1)]
+    neighbourhoods_list = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x, y), (x + 1, y), (x - 1, y + 1),
+                           (x, y + 1), (x + 1, y + 1)]
     random_num = random.randint(0, 8)
-    return neigbrhoodsList[random_num]
+    return neighbourhoods_list[random_num]
 
 
 def main():

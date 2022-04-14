@@ -28,11 +28,11 @@ StateToColor = {
 
 
 class Creature:
-    def __init__(self, location, state=State.NO_CORONA, speed=0):
+    def __init__(self, location, state=State.NO_CORONA, speed=0, generation_number_infection=50):
         self.location = location
         self.state = state
         self.speed = speed
-        self.generation_number_infection = 50
+        self.generation_number_infection = generation_number_infection
 
     def move(self):
         x = self.location[0]
@@ -60,7 +60,7 @@ class Creature:
             if c != cell and all(0 <= n < consts.SIZE for n in c):
                 yield c
 
-    def infect(self, matrix, infection_rate, sick_count):
+    def infect(self, matrix, infection_rate, sick_count, threshold):
         """
         x x x
         x o x
@@ -74,7 +74,11 @@ class Creature:
             if neighbour and not neighbour.sick:
                 infection_percentage = infection_rate * 100
                 probability = random.randint(0, 100)
-                if probability < infection_percentage and self.generation_number_infection:
+                if (
+                    probability < infection_percentage and
+                    self.generation_number_infection and
+                    infection_percentage > threshold
+                ):
                     neighbour.state = State.CORONA
                     print("[" + datetime.datetime.now().strftime("%H:%M:%S") +
                           "]:\n\tsick count: " + str(sick_count + 1) +

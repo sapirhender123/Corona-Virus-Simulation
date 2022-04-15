@@ -22,11 +22,11 @@ T_var = tk.StringVar()
 X_var = tk.StringVar()
 
 state = {
-    'N': 100,
-    'D': 50 / 100,
-    'R': 10,
-    'X': 5,
-    'T': 0,
+    'N': 400,
+    'D': 2 / 100,
+    'R': 2,
+    'X': 1,
+    'T': 1,
 }
 
 
@@ -95,6 +95,7 @@ def compare(pair, pair2):
     return (pair[0] == pair2[0]) and (pair[1] == pair2[1])
 
 
+# NOTE: check if the cell is empty in order that two creatures won't be in the same cell in the same generation.
 def is_cell_empty(matrix, next_cell):
     return all(np.equal(matrix[next_cell[0], next_cell[1]], np.asarray(consts.BLACK)))
 
@@ -176,13 +177,13 @@ def create_labels():
 
         try:
             N_str, D_str, R_str, T_str, X_str = get_label_vals()
-
+            global state
             state = {
-                'N': int(N_str) if len(N_str) != 0 else 100,
+                'N': int(N_str) if len(N_str) != 0 else 400,
                 'D': float(D_str) if len(D_str) else 50 / 100,
-                'R': float(R_str) if len(R_str) else 10,
-                'T': float(T_str) if len(T_str) else 0,
-                'X': float(X_str) if len(X_str) else 5,
+                'R': float(R_str) if len(R_str) else 5,
+                'T': float(T_str) if len(T_str) else 2,
+                'X': float(X_str) if len(X_str) else 50,
             }
 
             root.destroy()
